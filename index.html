@@ -123,27 +123,25 @@
 
             <!-- ========== MOBILE HEADER ========== -->
             <header class="mobile-header">
-                <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
                 <div class="mobile-header-logo">
-                    <div class="nav-logo-icon" style="width: 36px; height: 36px;">
-                        <i data-lucide="shield" style="color: white; width: 18px; height: 18px;"></i>
+                    <div class="nav-logo-icon" style="width: 32px; height: 32px;">
+                        <i data-lucide="shield" style="color: white; width: 16px; height: 16px;"></i>
                     </div>
-                    <span class="mobile-header-title">StudySpace Admin</span>
+                    <span class="mobile-header-title">StudySpace</span>
                 </div>
                 <div class="mobile-header-actions">
-                    <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Toggle Theme">
-                        <i data-lucide="sun" class="icon-sun icon-sm"></i>
-                        <i data-lucide="moon" class="icon-moon icon-sm"></i>
+                    <span id="mobileAdminName" class="mobile-admin-name"></span>
+                    <button class="mobile-header-btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="sun" class="icon-sun"></i>
+                        <i data-lucide="moon" class="icon-moon"></i>
+                    </button>
+                    <button class="mobile-header-btn mobile-logout-btn" onclick="handleLogout()" title="Logout">
+                        <i data-lucide="log-out"></i>
                     </button>
                 </div>
             </header>
 
-            <!-- ========== SIDEBAR OVERLAY ========== -->
-            <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileMenu()"></div>
+            <!-- ========== SIDEBAR (DESKTOP ONLY) ========== -->
 
             <!-- ========== SIDEBAR ========== -->
             <aside class="sidebar glass-card" id="sidebar">

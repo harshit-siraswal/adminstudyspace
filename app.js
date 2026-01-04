@@ -409,11 +409,15 @@ function showToastOnLogin(message, type) {
 function initializeDashboard() {
     console.log('📊 Initializing dashboard...');
 
-    // Set admin name in header
+    // Set admin name in header (desktop and mobile)
     const adminName = window.authFunctions.getAdminName();
     const adminNameEl = document.getElementById('adminName');
+    const mobileAdminNameEl = document.getElementById('mobileAdminName');
     if (adminNameEl) {
         adminNameEl.textContent = adminName;
+    }
+    if (mobileAdminNameEl) {
+        mobileAdminNameEl.textContent = adminName;
     }
 
     // Store admin data globally
