@@ -18,6 +18,16 @@
 }
 
 /* ============================================
+   HIDE MOBILE NAV ON LOGIN PAGE
+   ============================================ */
+#loginPage.active~.mobile-bottom-nav,
+#loginPage.active~#mobileBottomNav,
+body:has(#loginPage.active) .mobile-bottom-nav,
+body:has(#loginPage.active) .mobile-header {
+    display: none !important;
+}
+
+/* ============================================
    MOBILE HEADER - Clean & Compact
    ============================================ */
 .mobile-header {

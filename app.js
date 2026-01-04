@@ -322,6 +322,13 @@ async function handleLogin(e) {
         return false;
     }
 
+    // Verify reCAPTCHA
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) {
+        showToastOnLogin('Please complete the reCAPTCHA', 'error');
+        return false;
+    }
+
     // Show loading state
     if (loginBtn) loginBtn.disabled = true;
     if (loginBtnText) loginBtnText.classList.add('hidden');
