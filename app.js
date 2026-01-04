@@ -32,8 +32,8 @@ function switchTab(tabName) {
         content.style.display = 'none';
     });
 
-    // Remove active class from all tab/sidebar buttons
-    document.querySelectorAll('.tab-btn, .sidebar-nav-item').forEach(btn => {
+    // Remove active class from all tab/sidebar/bottom-nav buttons
+    document.querySelectorAll('.tab-btn, .sidebar-nav-item, .mobile-nav-item').forEach(btn => {
         btn.classList.remove('active');
     });
 
@@ -46,15 +46,19 @@ function switchTab(tabName) {
         console.error('❌ Section not found:', `${tabName}-section`);
     }
 
-    // Add active class to clicked tab/sidebar button
-    const tab = document.querySelector(`[data-tab="${tabName}"]`);
-    if (tab) {
-        tab.classList.add('active');
-    }
+    // Add active class to ALL buttons with matching data-tab (sidebar + bottom nav)
+    document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(btn => {
+        btn.classList.add('active');
+    });
 
     // Reinitialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+
+    // Close mobile menu when switching tabs
+    if (typeof closeMobileMenu === 'function') {
+        closeMobileMenu();
     }
 
     // Load data for the tab
@@ -79,6 +83,69 @@ function switchTab(tabName) {
 
 // Make switchTab globally available
 window.switchTab = switchTab;
+
+// ============================================
+// MOBILE MENU FUNCTIONS
+// ============================================
+
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const hamburger = document.getElementById('hamburgerBtn');
+    const body = document.body;
+
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+    if (overlay) {
+        overlay.classList.toggle('active');
+    }
+    if (hamburger) {
+        hamburger.classList.toggle('active');
+    }
+    body.classList.toggle('menu-open');
+}
+
+function closeMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const hamburger = document.getElementById('hamburgerBtn');
+    const body = document.body;
+
+    if (sidebar) {
+        sidebar.classList.remove('open');
+    }
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+    if (hamburger) {
+        hamburger.classList.remove('active');
+    }
+    body.classList.remove('menu-open');
+}
+
+function openMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const hamburger = document.getElementById('hamburgerBtn');
+    const body = document.body;
+
+    if (sidebar) {
+        sidebar.classList.add('open');
+    }
+    if (overlay) {
+        overlay.classList.add('active');
+    }
+    if (hamburger) {
+        hamburger.classList.add('active');
+    }
+    body.classList.add('menu-open');
+}
+
+// Expose mobile menu functions globally
+window.toggleMobileMenu = toggleMobileMenu;
+window.closeMobileMenu = closeMobileMenu;
+window.openMobileMenu = openMobileMenu;
 
 // ============================================
 // INITIALIZATION

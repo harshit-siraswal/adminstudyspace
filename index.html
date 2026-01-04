@@ -121,8 +121,33 @@
     <div id="dashboardPage" class="page">
         <div class="dashboard-layout">
 
+            <!-- ========== MOBILE HEADER ========== -->
+            <header class="mobile-header">
+                <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="mobile-header-logo">
+                    <div class="nav-logo-icon" style="width: 36px; height: 36px;">
+                        <i data-lucide="shield" style="color: white; width: 18px; height: 18px;"></i>
+                    </div>
+                    <span class="mobile-header-title">StudySpace Admin</span>
+                </div>
+                <div class="mobile-header-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="sun" class="icon-sun icon-sm"></i>
+                        <i data-lucide="moon" class="icon-moon icon-sm"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ========== SIDEBAR OVERLAY ========== -->
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileMenu()"></div>
+
             <!-- ========== SIDEBAR ========== -->
-            <aside class="sidebar glass-card">
+            <aside class="sidebar glass-card" id="sidebar">
+                <!-- Logo -->
                 <!-- Logo -->
                 <div class="sidebar-header">
                     <div class="nav-logo-icon" style="width: 40px; height: 40px;">
@@ -673,6 +698,30 @@
         </main>
     </div>
     </div>
+
+    <!-- ============================================
+         MOBILE BOTTOM NAVIGATION
+         ============================================ -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <div class="mobile-nav-items">
+            <button class="mobile-nav-item active" data-tab="resources" onclick="switchTab('resources')">
+                <i data-lucide="folder-open"></i>
+                <span>Resources</span>
+            </button>
+            <button class="mobile-nav-item" data-tab="notices" onclick="switchTab('notices')">
+                <i data-lucide="bell"></i>
+                <span>Notices</span>
+            </button>
+            <button class="mobile-nav-item" data-tab="syllabus" onclick="switchTab('syllabus')">
+                <i data-lucide="book-open"></i>
+                <span>Syllabus</span>
+            </button>
+            <button class="mobile-nav-item" data-tab="users" onclick="switchTab('users')">
+                <i data-lucide="users"></i>
+                <span>Users</span>
+            </button>
+        </div>
+    </nav>
 
     <!-- ============================================
          TOAST NOTIFICATIONS CONTAINER
