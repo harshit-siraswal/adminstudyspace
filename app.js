@@ -322,19 +322,16 @@ async function handleLogin(e) {
         return false;
     }
 
-    // Verify reCAPTCHA
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) {
-        showToastOnLogin('Please complete the reCAPTCHA', 'error');
-        return false;
-    }
-
     // Show loading state
     if (loginBtn) loginBtn.disabled = true;
     if (loginBtnText) loginBtnText.classList.add('hidden');
     if (loginSpinner) loginSpinner.classList.remove('hidden');
 
     try {
+        // Execute reCAPTCHA v3
+        const recaptchaToken = await grecaptcha.execute('6LezUEAsAAAAAGQMAgp33ulSj4B_lRs2S_Q3G8ha', { action: 'login' });
+        console.log('✅ reCAPTCHA v3 token obtained');
+
         console.log('🔐 Attempting login...');
 
         if (!window.authFunctions || !window.authFunctions.loginAdmin) {
