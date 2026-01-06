@@ -301,6 +301,7 @@ async function uploadTeacherResource(event) {
                 source: 'teacher', // Distinguish from student uploads
                 uploaded_by_name: 'Teacher/Admin',
                 uploaded_by_email: session.email || null,
+                college_id: session.college_id || null, // Add college_id
                 created_at: new Date().toISOString()
             })
             .select();
@@ -313,8 +314,10 @@ async function uploadTeacherResource(event) {
         // Close modal and refresh
         hideUploadResourceModal();
 
-        // Refresh the resources list
-        if (window.dashboardFunctions?.fetchResources) {
+        // Clear filters to ensure the new resource is visible
+        if (window.dashboardFunctions?.clearFilters) {
+            window.dashboardFunctions.clearFilters();
+        } else if (window.dashboardFunctions?.fetchResources) {
             await window.dashboardFunctions.fetchResources();
         }
 

@@ -108,6 +108,14 @@ function isSuperAdmin() {
 }
 
 /**
+ * Get admin college ID
+ */
+function getAdminCollege() {
+    const session = getAdminSession();
+    return session?.college_id || null;
+}
+
+/**
  * Check if can post to department
  */
 function canPostToDepartment(department) {
@@ -237,6 +245,7 @@ async function loginAdmin(secretKey) {
                     role: data.role,
                     department: data.department,
                     subject: data.subject,
+                    college_id: data.college_id,
                 };
             }
         } catch (dbError) {
@@ -288,6 +297,7 @@ window.authFunctions = {
     getAdminSession,
     getAdminData,
     getAdminRole,
+    getAdminCollege,
     isSuperAdmin,
     canPostToDepartment,
     canUploadSyllabus,

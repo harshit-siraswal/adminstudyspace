@@ -48,8 +48,10 @@ const branchLabels = {
  * Get admin's college from their key
  */
 async function getAdminCollege() {
-    // Column college_id does not exist in admin_keys currently
-    // Returning null to bypass college filtering until schema is updated
+    // Get college_id from auth session
+    if (window.authFunctions && window.authFunctions.getAdminCollege) {
+        return window.authFunctions.getAdminCollege();
+    }
     return null;
 }
 
