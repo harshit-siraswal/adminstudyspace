@@ -220,36 +220,28 @@ async function loginAdmin(secretKey) {
 
         let sessionData = null;
 
-        // 1. Try Supabase Login
+        // 1. Try Supabase Login via Secure RPC
         try {
             const keyHash = await hashAdminKey(secretKey);
+
+            // Call the secure database function instead of querying the table directly
             const { data, error } = await window.supabaseClient
-                .from('admin_keys')
-                .select('*')
-                .eq('key_hash', keyHash)
-                .eq('is_active', true)
-                .single();
+                .rpc('verify_admin_key', { p_key_hash: keyHash });
 
-            if (!error && data) {
-                // Update last_used timestamp
-                window.supabaseClient
-                    .from('admin_keys')
-                    .update({ last_used: new Date().toISOString() })
-                    .eq('key_hash', keyHash)
-                    .then(() => console.log('timestamp updated'));
-
+            if (!error && data && data.length > 0) {
+                const adminData = data[0]; // RPC returns an array
                 sessionData = {
-                    id: data.id,
+                    id: adminData.id,
                     key_hash: keyHash,
-                    admin_name: data.admin_name,
-                    role: data.role,
-                    department: data.department,
-                    subject: data.subject,
-                    college_id: data.college_id,
+                    admin_name: adminData.admin_name,
+                    role: adminData.role,
+                    department: adminData.department,
+                    subject: adminData.subject,
+                    college_id: adminData.college_id,
                 };
             }
         } catch (dbError) {
-            console.warn('⚠️ Supabase login failed, checking fallback:', dbError);
+            console.warn('⚠️ Supabase login failed:', dbError);
         }
 
         if (!sessionData) {
