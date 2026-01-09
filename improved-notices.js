@@ -393,20 +393,18 @@ function openPdfViewer(url, title) {
     const overlay = document.getElementById('pdfViewerOverlay');
     const titleEl = document.getElementById('pdfViewerTitle');
     const iframe = document.getElementById('pdfViewerFrame');
-    const zoomLevelEl = document.getElementById('pdfZoomLevel');
 
     if (!overlay || !iframe) return;
 
-    titleEl.textContent = title || 'Document';
+    if (titleEl) titleEl.textContent = title || 'Document';
     iframe.src = url;
     iframe.style.width = '90vw';
     iframe.style.height = '85vh';
-    zoomLevelEl.textContent = '100%';
 
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    // Initialize controls
+    // Initialize icons
     lucide.createIcons();
 }
 
