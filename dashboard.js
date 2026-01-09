@@ -602,15 +602,22 @@ function createResourceCard(resource) {
 }
 
 /**
- * Preview resource (open in new tab)
+ * Preview resource (uses PDF viewer for notes/pyq, new tab for videos)
  */
 function previewResource(resourceId) {
     const resource = dashboardState.resources.find(r => r.id === resourceId);
     if (!resource) return;
 
-    const url = resource.type === 'video' ? resource.video_url : resource.file_url;
-    if (url) {
-        window.open(url, '_blank');
+    if (resource.type === 'video' && resource.video_url) {
+        // Videos open in new tab
+        window.open(resource.video_url, '_blank');
+    } else if (resource.file_url) {
+        // Notes/PYQ open in custom PDF viewer
+        if (typeof openPdfViewer === 'function' || typeof window.openPdfViewer === 'function') {
+            (window.openPdfViewer || openPdfViewer)(resource.file_url, resource.title);
+        } else {
+            window.open(resource.file_url, '_blank');
+        }
     }
 }
 

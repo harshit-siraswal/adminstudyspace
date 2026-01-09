@@ -514,8 +514,8 @@ function displaySyllabi(syllabi) {
                 <span><i data-lucide="user" class="icon-xs"></i> ${syllabus.uploaded_by}</span>
             </div>
             <div class="card-actions">
-                <button class="btn-outline btn-sm" onclick="window.open('${syllabus.pdf_url}', '_blank')">
-                    <i data-lucide="file-text" class="icon-xs"></i>
+                <button class="btn-view-pdf" onclick="openPdfViewer('${syllabus.pdf_url}', '${syllabus.title}')">
+                    <i data-lucide="eye" class="icon-xs"></i>
                     View PDF
                 </button>
                 <button class="btn-danger btn-sm" onclick="deleteSyllabus('${syllabus.id}')">
