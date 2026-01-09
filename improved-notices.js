@@ -77,21 +77,18 @@ async function createNotice(event) {
             }
         }
 
-        // Insert notice
+        // Insert notice via RPC (bypasses RLS)
         const { data, error } = await window.supabaseClient
-            .from('notices')
-            .insert([{
-                title: title,
-                content: content,
-                department: department,
-                priority: priority,
-                file_url: fileUrl,
-                file_type: uploadedFileType,
-                expires_at: expiresAt || null,
-                created_by: window.authFunctions.getAdminName(),
-                is_active: true
-            }])
-            .select();
+            .rpc('insert_notice', {
+                p_title: title,
+                p_content: content,
+                p_department: department,
+                p_priority: priority,
+                p_file_url: fileUrl,
+                p_file_type: uploadedFileType,
+                p_expires_at: expiresAt || null,
+                p_created_by: window.authFunctions.getAdminName()
+            });
 
         if (error) throw error;
 

@@ -282,29 +282,26 @@ async function uploadTeacherResource(event) {
         // Get admin session for author info
         const session = window.authFunctions?.getAdminSession?.() || {};
 
-        // Create resource in database
+        // Create resource in database via RPC (bypasses RLS)
         console.log('📝 Creating resource in database...');
         const { data, error } = await window.supabaseClient
-            .from('resources')
-            .insert({
-                title: title,
-                semester: semester,
-                branch: branch,
-                subject: subject,
-                chapter: chapter || null,
-                topic: topic || null,
-                type: resourceType,
-                description: description || null,
-                file_url: fileUrl,
-                video_url: videoUrl,
-                status: 'approved', // Auto-approved for teacher uploads
-                source: 'teacher', // Distinguish from student uploads
-                uploaded_by_name: 'Teacher/Admin',
-                uploaded_by_email: session.email || null,
-                college_id: session.college_id || null, // Add college_id
-                created_at: new Date().toISOString()
-            })
-            .select();
+            .rpc('insert_resource', {
+                p_title: title,
+                p_semester: semester,
+                p_branch: branch,
+                p_subject: subject,
+                p_type: resourceType,
+                p_status: 'approved',
+                p_source: 'teacher',
+                p_file_url: fileUrl,
+                p_video_url: videoUrl,
+                p_description: description || null,
+                p_chapter: chapter || null,
+                p_topic: topic || null,
+                p_college_id: session.college_id || null,
+                p_uploaded_by_name: 'Teacher/Admin',
+                p_uploaded_by_email: session.email || null
+            });
 
         if (error) throw error;
 
