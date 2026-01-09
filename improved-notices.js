@@ -78,7 +78,7 @@ async function createNotice(event) {
         }
 
         // Insert notice
-        const { data, error } = await window.supabaseAdminClient
+        const { data, error } = await window.supabaseClient
             .from('notices')
             .insert([{
                 title: title,
@@ -305,7 +305,7 @@ function updateNoticesStats() {
 
 async function toggleNoticeActive(id, currentStatus) {
     try {
-        const { error } = await window.supabaseAdminClient
+        const { error } = await window.supabaseClient
             .from('notices')
             .update({ is_active: !currentStatus })
             .eq('id', id);
@@ -325,14 +325,14 @@ async function deleteNotice(id) {
 
     try {
         // Get notice to delete file if exists
-        const { data: notice } = await window.supabaseAdminClient
+        const { data: notice } = await window.supabaseClient
             .from('notices')
             .select('file_url, file_type')
             .eq('id', id)
             .single();
 
         // Delete from database
-        const { error } = await window.supabaseAdminClient
+        const { error } = await window.supabaseClient
             .from('notices')
             .delete()
             .eq('id', id);
@@ -343,7 +343,7 @@ async function deleteNotice(id) {
         if (notice?.file_url && notice?.file_type === 'pdf') {
             try {
                 const filePath = notice.file_url.split('/').slice(-2).join('/');
-                await window.supabaseAdminClient.storage
+                await window.supabaseClient.storage
                     .from('resources')
                     .remove([filePath]);
             } catch (e) {
