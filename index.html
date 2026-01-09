@@ -874,6 +874,33 @@
     </div>
 
     <!-- ============================================
+         PDF VIEWER MODAL
+         ============================================ -->
+    <div id="pdfViewerOverlay" class="pdf-viewer-overlay">
+        <div class="pdf-viewer-header">
+            <h3 class="pdf-viewer-title" id="pdfViewerTitle">Document</h3>
+            <div class="pdf-viewer-controls">
+                <button id="pdfZoomOut" title="Zoom Out">
+                    <i data-lucide="zoom-out"></i>
+                </button>
+                <span class="pdf-zoom-level" id="pdfZoomLevel">100%</span>
+                <button id="pdfZoomIn" title="Zoom In">
+                    <i data-lucide="zoom-in"></i>
+                </button>
+                <button id="pdfOpenExternal" title="Open in New Tab">
+                    <i data-lucide="external-link"></i>
+                </button>
+                <button id="pdfClose" title="Close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+        </div>
+        <div class="pdf-viewer-content">
+            <iframe id="pdfViewerFrame" src="" width="100%" height="100%"></iframe>
+        </div>
+    </div>
+
+    <!-- ============================================
          TOAST NOTIFICATIONS CONTAINER
          ============================================ -->
     <div id="toastContainer" class="toast-container"></div>

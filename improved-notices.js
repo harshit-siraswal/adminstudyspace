@@ -224,10 +224,16 @@ function displayNotices(notices) {
                 <div class="notice-attachment">
                     <i data-lucide="${notice.file_type === 'pdf' ? 'file-text' : 'video'}" class="icon-sm"></i>
                     <span>${notice.file_type === 'pdf' ? 'PDF Document' : 'Video Link'}</span>
-                    <button class="btn-link" onclick="window.open('${notice.file_url}', '_blank')">
-                        View ${notice.file_type === 'pdf' ? 'PDF' : 'Video'}
-                        <i data-lucide="external-link" class="icon-xs"></i>
-                    </button>
+                    ${notice.file_type === 'pdf'
+                    ? `<button class="btn-view-pdf" onclick="openPdfViewer('${notice.file_url}', '${notice.title}')">
+                            <i data-lucide="eye" class="icon-xs"></i>
+                            View PDF
+                           </button>`
+                    : `<button class="btn-view-pdf" onclick="window.open('${notice.file_url}', '_blank')">
+                            <i data-lucide="play" class="icon-xs"></i>
+                            Watch Video
+                           </button>`
+                }
                 </div>
             ` : ''}
             
@@ -372,6 +378,92 @@ function getDepartmentName(value) {
 }
 
 // ============================================
+// PDF VIEWER FUNCTIONS
+// ============================================
+let currentPdfUrl = '';
+let pdfZoomLevel = 100;
+const MIN_ZOOM = 50;
+const MAX_ZOOM = 200;
+const ZOOM_STEP = 25;
+
+function openPdfViewer(url, title) {
+    currentPdfUrl = url;
+    pdfZoomLevel = 100;
+
+    const overlay = document.getElementById('pdfViewerOverlay');
+    const titleEl = document.getElementById('pdfViewerTitle');
+    const iframe = document.getElementById('pdfViewerFrame');
+    const zoomLevelEl = document.getElementById('pdfZoomLevel');
+
+    if (!overlay || !iframe) return;
+
+    titleEl.textContent = title || 'Document';
+    iframe.src = url;
+    iframe.style.width = '90vw';
+    iframe.style.height = '85vh';
+    zoomLevelEl.textContent = '100%';
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Initialize controls
+    lucide.createIcons();
+}
+
+function closePdfViewer() {
+    const overlay = document.getElementById('pdfViewerOverlay');
+    const iframe = document.getElementById('pdfViewerFrame');
+
+    if (overlay) {
+        overlay.classList.remove('active');
+        iframe.src = '';
+        document.body.style.overflow = '';
+    }
+}
+
+function zoomPdf(direction) {
+    const iframe = document.getElementById('pdfViewerFrame');
+    const zoomLevelEl = document.getElementById('pdfZoomLevel');
+
+    if (direction === 'in' && pdfZoomLevel < MAX_ZOOM) {
+        pdfZoomLevel += ZOOM_STEP;
+    } else if (direction === 'out' && pdfZoomLevel > MIN_ZOOM) {
+        pdfZoomLevel -= ZOOM_STEP;
+    }
+
+    const scale = pdfZoomLevel / 100;
+    iframe.style.width = `${90 * scale}vw`;
+    iframe.style.height = `${85 * scale}vh`;
+    zoomLevelEl.textContent = `${pdfZoomLevel}%`;
+}
+
+// Initialize PDF viewer controls
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('pdfClose');
+    const zoomInBtn = document.getElementById('pdfZoomIn');
+    const zoomOutBtn = document.getElementById('pdfZoomOut');
+    const openExternalBtn = document.getElementById('pdfOpenExternal');
+    const overlay = document.getElementById('pdfViewerOverlay');
+
+    if (closeBtn) closeBtn.addEventListener('click', closePdfViewer);
+    if (zoomInBtn) zoomInBtn.addEventListener('click', () => zoomPdf('in'));
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => zoomPdf('out'));
+    if (openExternalBtn) openExternalBtn.addEventListener('click', () => window.open(currentPdfUrl, '_blank'));
+
+    // Close on overlay click
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closePdfViewer();
+        });
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePdfViewer();
+    });
+});
+
+// ============================================
 // GLOBAL EXPORTS
 // ============================================
 window.deleteNotice = deleteNotice;
@@ -384,5 +476,7 @@ window.filterNoticesByDept = filterNoticesByDept;
 window.searchNotices = searchNotices;
 window.sortNotices = sortNotices;
 window.toggleFileUpload = toggleFileUpload;
+window.openPdfViewer = openPdfViewer;
+window.closePdfViewer = closePdfViewer;
 
 console.log('✅ improved-notices.js loaded');
