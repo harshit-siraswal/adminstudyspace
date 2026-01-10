@@ -25,31 +25,42 @@ async function handleBanUser(e) {
             return;
         }
 
-        // Check if user is already banned
-        const { data: existing } = await window.supabaseClient
+        // Get college_id for non-super admins (null = banned from all colleges)
+        const collegeId = session.role === 'super_admin' ? null : (session.college_id || null);
+
+        // Check if user is already banned for this college
+        let existingQuery = window.supabaseClient
             .from('banned_users')
             .select('id')
-            .eq('email', email)
-            .single();
+            .eq('email', email);
+
+        if (collegeId) {
+            existingQuery = existingQuery.eq('college_id', collegeId);
+        } else {
+            existingQuery = existingQuery.is('college_id', null);
+        }
+
+        const { data: existing } = await existingQuery.single();
 
         if (existing) {
-            showToast('This user is already banned', 'error');
+            showToast('This user is already banned' + (collegeId ? ' for this college' : ''), 'error');
             return;
         }
 
-        // Insert into banned_users table
+        // Insert into banned_users table with college_id
         const { error } = await window.supabaseClient
             .from('banned_users')
             .insert([{
                 email: email,
                 reason: reason || 'No reason provided',
                 banned_by: session.admin_name || 'Admin',
-                banned_at: new Date().toISOString()
+                banned_at: new Date().toISOString(),
+                college_id: collegeId // null = banned from ALL colleges (super admin)
             }]);
 
         if (error) throw error;
 
-        showToast(`✅ ${email} has been banned`, 'success');
+        showToast(`✅ ${email} has been banned` + (collegeId ? ` from ${collegeId}` : ' from all colleges'), 'success');
 
         // Clear form
         document.getElementById('banEmail').value = '';
@@ -57,6 +68,7 @@ async function handleBanUser(e) {
 
         // Refresh list
         loadBannedUsers();
+
 
     } catch (error) {
         console.error('Error banning user:', error);
