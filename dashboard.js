@@ -41,6 +41,35 @@ const branchLabels = {
 };
 
 // ============================================
+// PERFORMANCE UTILITIES
+// ============================================
+
+/**
+ * Debounce function - delays execution until after wait ms have elapsed
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Cache configuration
+const CACHE_KEY = 'admin_resources_cache';
+const CACHE_TTL = 30000; // 30 seconds
+
+// Pagination configuration
+const PAGE_SIZE = 20;
+let currentPage = 1;
+let totalResources = 0;
+let hasMoreResources = true;
+
+// ============================================
 // FETCH FUNCTIONS
 // ============================================
 
@@ -56,22 +85,34 @@ async function getAdminCollege() {
 }
 
 /**
- * Fetch resources from database
+ * Fetch resources from database (with pagination)
+ * @param {boolean} loadMore - If true, append to existing resources
  */
-async function fetchResources() {
+async function fetchResources(loadMore = false) {
     dashboardState.loading = true;
     showLoading(true);
 
     try {
-        console.log('📥 Fetching resources...');
+        // Reset pagination if not loading more
+        if (!loadMore) {
+            currentPage = 1;
+            dashboardState.resources = [];
+        }
+
+        console.log(`📥 Fetching resources (page ${currentPage})...`);
 
         // Get admin's college first
         const collegeId = await getAdminCollege();
 
+        // Calculate range for pagination
+        const from = (currentPage - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
         let query = window.supabaseClient
             .from('resources')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
 
         // Filter by college if admin has a specific college
         if (collegeId && collegeId !== 'all') {
@@ -92,22 +133,71 @@ async function fetchResources() {
             query = query.eq('status', dashboardState.filters.status);
         }
 
-        const { data, error } = await query;
+        const { data, error, count } = await query;
 
         if (error) throw error;
 
-        dashboardState.resources = data || [];
+        // Append or replace resources
+        if (loadMore) {
+            dashboardState.resources = [...dashboardState.resources, ...(data || [])];
+        } else {
+            dashboardState.resources = data || [];
+        }
+
+        // Update pagination state
+        totalResources = count || 0;
+        hasMoreResources = dashboardState.resources.length < totalResources;
+
         applySearchFilter();
         calculateStats();
         renderResources();
+        updateLoadMoreButton();
 
-        console.log('✅ Loaded', dashboardState.resources.length, 'resources');
+        console.log(`✅ Loaded ${dashboardState.resources.length}/${totalResources} resources`);
     } catch (error) {
         console.error('❌ Error fetching resources:', error);
         showToast('Failed to load resources', 'error');
     } finally {
         dashboardState.loading = false;
         showLoading(false);
+    }
+}
+
+/**
+ * Load more resources (pagination)
+ */
+function loadMoreResources() {
+    if (!hasMoreResources || dashboardState.loading) return;
+    currentPage++;
+    fetchResources(true);
+}
+
+/**
+ * Update Load More button visibility
+ */
+function updateLoadMoreButton() {
+    let loadMoreBtn = document.getElementById('loadMoreBtn');
+    const resourcesList = document.getElementById('resourcesList');
+
+    if (!loadMoreBtn && resourcesList) {
+        // Create Load More button if it doesn't exist
+        loadMoreBtn = document.createElement('button');
+        loadMoreBtn.id = 'loadMoreBtn';
+        loadMoreBtn.className = 'btn btn-outline btn-block';
+        loadMoreBtn.style.marginTop = '1.5rem';
+        loadMoreBtn.innerHTML = '<i data-lucide="chevrons-down" class="icon-sm"></i> Load More';
+        loadMoreBtn.onclick = loadMoreResources;
+        resourcesList.parentElement.appendChild(loadMoreBtn);
+    }
+
+    if (loadMoreBtn) {
+        if (hasMoreResources && dashboardState.filteredResources.length > 0) {
+            loadMoreBtn.style.display = 'flex';
+            loadMoreBtn.innerHTML = `<i data-lucide="chevrons-down" class="icon-sm"></i> Load More (${dashboardState.resources.length}/${totalResources})`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } else {
+            loadMoreBtn.style.display = 'none';
+        }
     }
 }
 
@@ -635,4 +725,5 @@ window.dashboardFunctions = {
     updateResourceStatus,
     deleteResource,
     previewResource,
+    loadMoreResources,
 };

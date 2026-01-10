@@ -213,13 +213,24 @@ function setupEventListeners() {
         logoutBtn.addEventListener('click', handleLogout);
     }
 
-    // Search Input
+    // Search Input (with debounce for performance)
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
+        // Create debounced search handler (300ms delay)
+        const debouncedSearch = (function () {
+            let timeout;
+            return function (value) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    if (window.dashboardFunctions) {
+                        window.dashboardFunctions.updateFilter('search', value);
+                    }
+                }, 300);
+            };
+        })();
+
         searchInput.addEventListener('input', (e) => {
-            if (window.dashboardFunctions) {
-                window.dashboardFunctions.updateFilter('search', e.target.value);
-            }
+            debouncedSearch(e.target.value);
         });
     }
 
