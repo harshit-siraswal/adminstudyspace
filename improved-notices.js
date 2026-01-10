@@ -308,12 +308,11 @@ function updateNoticesStats() {
 
 async function toggleNoticeActive(id, currentStatus) {
     try {
-        // Use RPC function to bypass RLS
-        const { data, error } = await window.supabaseClient
-            .rpc('update_notice_visibility', {
-                p_id: id,
-                p_is_active: !currentStatus
-            });
+        // Direct update (requires RLS policy: allow update for anon)
+        const { error } = await window.supabaseClient
+            .from('notices')
+            .update({ is_active: !currentStatus })
+            .eq('id', id);
 
         if (error) throw error;
 
