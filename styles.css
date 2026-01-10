@@ -209,6 +209,11 @@ body::before {
   z-index: 10000;
 }
 
+/* Utility Classes */
+.hidden {
+  display: none !important;
+}
+
 /* ============================================
    GLASS CARD COMPONENT
    To add more cards: Apply class "glass-card" 

@@ -20,27 +20,34 @@ async function handleBanUser(e) {
         console.log('🚫 Banning user:', email);
 
         const session = window.authFunctions.getAdminSession();
-        if (!session || !session.key_hash) {
+        if (!session) {
             showToast('Session expired. Please login again.', 'error');
             return;
         }
 
-        const response = await fetch('/api/admin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'ban_user',
-                keyHash: session.key_hash,
-                email: email,
-                reason: reason
-            })
-        });
+        // Check if user is already banned
+        const { data: existing } = await window.supabaseClient
+            .from('banned_users')
+            .select('id')
+            .eq('email', email)
+            .single();
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Ban failed');
+        if (existing) {
+            showToast('This user is already banned', 'error');
+            return;
         }
+
+        // Insert into banned_users table
+        const { error } = await window.supabaseClient
+            .from('banned_users')
+            .insert([{
+                email: email,
+                reason: reason || 'No reason provided',
+                banned_by: session.admin_name || 'Admin',
+                banned_at: new Date().toISOString()
+            }]);
+
+        if (error) throw error;
 
         showToast(`✅ ${email} has been banned`, 'success');
 
@@ -64,26 +71,18 @@ async function handleUnbanUser(email) {
         console.log('✅ Unbanning user:', email);
 
         const session = window.authFunctions.getAdminSession();
-        if (!session || !session.key_hash) {
+        if (!session) {
             showToast('Session expired. Please login again.', 'error');
             return;
         }
 
-        const response = await fetch('/api/admin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'unban_user',
-                keyHash: session.key_hash,
-                email: email
-            })
-        });
+        // Delete from banned_users table
+        const { error } = await window.supabaseClient
+            .from('banned_users')
+            .delete()
+            .eq('email', email);
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Unban failed');
-        }
+        if (error) throw error;
 
         showToast(`✅ ${email} has been unbanned`, 'success');
         loadBannedUsers();

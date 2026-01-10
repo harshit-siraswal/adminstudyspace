@@ -308,10 +308,12 @@ function updateNoticesStats() {
 
 async function toggleNoticeActive(id, currentStatus) {
     try {
-        const { error } = await window.supabaseClient
-            .from('notices')
-            .update({ is_active: !currentStatus })
-            .eq('id', id);
+        // Use RPC function to bypass RLS
+        const { data, error } = await window.supabaseClient
+            .rpc('update_notice_visibility', {
+                p_id: id,
+                p_is_active: !currentStatus
+            });
 
         if (error) throw error;
 
@@ -319,7 +321,7 @@ async function toggleNoticeActive(id, currentStatus) {
         await loadNotices();
     } catch (error) {
         console.error('Error toggling notice:', error);
-        showToast('❌ Failed to update notice', 'error');
+        showToast('❌ Failed to update notice: ' + error.message, 'error');
     }
 }
 
