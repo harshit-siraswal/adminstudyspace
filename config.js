@@ -16,6 +16,14 @@ const CLOUDINARY_CONFIG = {
     folder: 'admin-studyspace', // Folder for admin uploads
 };
 
+// Backend API Configuration
+const BACKEND_CONFIG = {
+    baseUrl: 'https://api.studyspace.kiet.edu', // Replace with your actual backend URL
+};
+
+// Export config for use in other files
+window.BACKEND_CONFIG = BACKEND_CONFIG;
+
 // Initialize Supabase Client
 (function () {
     try {

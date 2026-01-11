@@ -25,42 +25,34 @@ async function handleBanUser(e) {
             return;
         }
 
-        // Get college_id for non-super admins (null = banned from all colleges)
-        const collegeId = session.role === 'super_admin' ? null : (session.college_id || null);
-
-        // Check if user is already banned for this college
-        let existingQuery = window.supabaseClient
-            .from('banned_users')
-            .select('id')
-            .eq('email', email);
-
-        if (collegeId) {
-            existingQuery = existingQuery.eq('college_id', collegeId);
-        } else {
-            existingQuery = existingQuery.is('college_id', null);
-        }
-
-        const { data: existing } = await existingQuery.single();
-
-        if (existing) {
-            showToast('This user is already banned' + (collegeId ? ' for this college' : ''), 'error');
+        // Get backend URL from config
+        const backendUrl = window.BACKEND_CONFIG?.baseUrl || '';
+        if (!backendUrl) {
+            showToast('Backend URL not configured in config.js', 'error');
             return;
         }
 
-        // Insert into banned_users table with college_id
-        const { error } = await window.supabaseClient
-            .from('banned_users')
-            .insert([{
+        // Call backend API to ban user
+        const response = await fetch(`${backendUrl}/api/admin/users/ban`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.key_hash}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 email: email,
                 reason: reason || 'No reason provided',
-                banned_by: session.admin_name || 'Admin',
-                banned_at: new Date().toISOString(),
-                college_id: collegeId // null = banned from ALL colleges (super admin)
-            }]);
+                college_id: session.role === 'super_admin' ? null : session.college_id
+            })
+        });
 
-        if (error) throw error;
+        const result = await response.json();
 
-        showToast(`✅ ${email} has been banned` + (collegeId ? ` from ${collegeId}` : ' from all colleges'), 'success');
+        if (!response.ok) {
+            throw new Error(result.error || result.message || 'Ban failed');
+        }
+
+        showToast(`✅ ${email} has been banned`, 'success');
 
         // Clear form
         document.getElementById('banEmail').value = '';
@@ -68,7 +60,6 @@ async function handleBanUser(e) {
 
         // Refresh list
         loadBannedUsers();
-
 
     } catch (error) {
         console.error('Error banning user:', error);
@@ -88,13 +79,28 @@ async function handleUnbanUser(email) {
             return;
         }
 
-        // Delete from banned_users table
-        const { error } = await window.supabaseClient
-            .from('banned_users')
-            .delete()
-            .eq('email', email);
+        // Get backend URL from config
+        const backendUrl = window.BACKEND_CONFIG?.baseUrl || '';
+        if (!backendUrl) {
+            showToast('Backend URL not configured in config.js', 'error');
+            return;
+        }
 
-        if (error) throw error;
+        // Call backend API to unban user
+        const response = await fetch(`${backendUrl}/api/admin/users/unban`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.key_hash}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || result.message || 'Unban failed');
+        }
 
         showToast(`✅ ${email} has been unbanned`, 'success');
         loadBannedUsers();
@@ -112,14 +118,34 @@ async function loadBannedUsers() {
     container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading...</p>';
 
     try {
-        const { data, error } = await window.supabaseClient
-            .from('banned_users')
-            .select('*')
-            .order('banned_at', { ascending: false });
+        // Try to load from backend first, fall back to direct Supabase
+        const backendUrl = window.BACKEND_CONFIG?.baseUrl || '';
+        let data = [];
 
-        if (error) throw error;
+        if (backendUrl) {
+            const session = window.authFunctions.getAdminSession();
+            const response = await fetch(`${backendUrl}/api/admin/users/banned`, {
+                headers: {
+                    'Authorization': `Bearer ${session?.key_hash || ''}`
+                }
+            });
+            if (response.ok) {
+                const result = await response.json();
+                data = result.data || result || [];
+            }
+        }
 
-        if (!data || data.length === 0) {
+        // Fall back to direct Supabase if backend not configured or failed
+        if (data.length === 0) {
+            const { data: sbData, error } = await window.supabaseClient
+                .from('banned_users')
+                .select('*')
+                .order('banned_at', { ascending: false });
+            if (error) throw error;
+            data = sbData || [];
+        }
+
+        if (data.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
                     <i data-lucide="check-circle" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
@@ -138,7 +164,7 @@ async function loadBannedUsers() {
                         ${user.reason || 'No reason provided'}
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-disabled); margin-top: 0.25rem;">
-                        Banned by ${user.banned_by} on ${new Date(user.banned_at).toLocaleDateString()}
+                        Banned by ${user.banned_by || 'Admin'} on ${new Date(user.banned_at).toLocaleDateString()}
                     </div>
                 </div>
                 <button class="btn btn-success btn-sm" onclick="handleUnbanUser('${user.email}')">
