@@ -396,14 +396,16 @@ function handleTogglePassword() {
     const eyeIcon = document.getElementById('eyeIcon');
     const eyeOffIcon = document.getElementById('eyeOffIcon');
 
+    if (!secretKeyInput) return;
+
     if (secretKeyInput.type === 'password') {
         secretKeyInput.type = 'text';
-        if (eyeIcon) eyeIcon.classList.add('hidden');
-        if (eyeOffIcon) eyeOffIcon.classList.remove('hidden');
+        if (eyeIcon) eyeIcon.style.display = 'none';
+        if (eyeOffIcon) eyeOffIcon.style.display = 'inline';
     } else {
         secretKeyInput.type = 'password';
-        if (eyeIcon) eyeIcon.classList.remove('hidden');
-        if (eyeOffIcon) eyeOffIcon.classList.add('hidden');
+        if (eyeIcon) eyeIcon.style.display = 'inline';
+        if (eyeOffIcon) eyeOffIcon.style.display = 'none';
     }
 }
 
