@@ -18,7 +18,7 @@ const CLOUDINARY_CONFIG = {
 
 // Backend API Configuration
 const BACKEND_CONFIG = {
-    baseUrl: 'https://api.studyspace.kiet.edu', // Replace with your actual backend URL
+    baseUrl: 'https://api.mystudyspace.me', // Replace with your actual backend URL
 };
 
 // Export config for use in other files
